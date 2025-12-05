@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>キーボードで動かす（上下左右＋色変更）</title>
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; }
+  .stage {
+    position: relative; width: 600px; height: 240px;
+    margin: 24px auto; border: 2px solid #333; background: #f6f8ff;
+    overflow: hidden;
+  }
+  #box {
+    position: absolute; left: 50px; top: 96px;
+    width: 48px; height: 48px; background: #ff6b6b; border-radius: 8px;
+    display: grid; place-items: center; color:#fff; font-weight: 700;
+    transition: background 0.3s;
+  }
+  .hint { text-align:center; color:#555; }
+</style>
+</head>
+<body>
+  <h1 style="text-align:center;">キーボードで動かす（上下左右＋色変更）</h1>
+  <p class="hint">← / → / ↑ / ↓ で動きます。スペースキーで色が変わります。</p>
+
+  <div class="stage" id="stage">
+    <div id="box">■</div>
+  </div>
+
+  <script defer>
+    const stage = document.getElementById('stage');
+    const box   = document.getElementById('box');
+
+    // 位置（px）
+    let x = 50;
+    let y = 96;
+    const step = 10;
+
+    // 色リスト
+    const colors = ['#ff6b6b', '#4dabf7', '#51cf66', '#ffd43b', '#845ef7'];
+    let colorIndex = 0;
+
+    // 範囲制限関数
+    function clamp(v, min, max) {
+      return Math.max(min, Math.min(max, v));
+    }
+
+    // 描画関数
+    function draw() {
+      box.style.left = x + 'px';
+      box.style.top  = y + 'px';
+    }
+    draw();
+
+    // 矢印キーとスペースキーのスクロールを防ぐ
+    window.addEventListener('keydown', (e) => {
+      if (
+        e.key === 'ArrowLeft' ||
+        e.key === 'ArrowRight' ||
+        e.key === 'ArrowUp' ||
+        e.key === 'ArrowDown' ||
+        e.key === ' '
+      ) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // キー入力処理
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') {
+        x += step;
+      } else if (e.key === 'ArrowLeft') {
+        x -= step;
+      } else if (e.key === 'ArrowUp') {
+        y -= step;
+      } else if (e.key === 'ArrowDown') {
+        y += step;
+      } else if (e.key === ' ') {
+        // スペースキーで色変更
+        colorIndex = (colorIndex + 1) % colors.length;
+        box.style.background = colors[colorIndex];
+        return;
+      } else {
+        return; // 他のキーは無視
+      }
+
+      // ステージ範囲に収める
+      const maxX = stage.clientWidth - box.clientWidth;
+      const maxY = stage.clientHeight - box.clientHeight;
+      x = clamp(x, 0, maxX);
+      y = clamp(y, 0, maxY);
+
+      draw();
+    });
+  </script>
+</body>
+</html>
